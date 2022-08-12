@@ -1,4 +1,7 @@
-#include "s21_cat_header.h"
+# include <stdio.h>
+# include <stdlib.h>
+# include <getopt.h>
+# include <unistd.h>
 
 typedef struct options_t {
     int b;
@@ -24,22 +27,20 @@ void parser(int argc, char **argv, opt *options) {
         if (opt == 'e') {
             options->e = 1;
             options->v = 1;
-        }
-        if (opt == 't') {
+        } else if (opt == 't') {
             options->t = 1;
             options->v = 1;
-        }
-        if (opt == 'b')
+        } else if (opt == 'b') {
             options->b = 1;
-        if (opt == 'n')
+        } else if (opt == 'n') {
             options->n = 1;
-        if (opt == 's')
+        } else if (opt == 's') {
             options->s = 1;
-        if (opt == 'v')
+        } else if (opt == 'v') {
             options->v = 1;
-        if (opt == 'T')
+        } else if (opt == 'T') {
             options->t = 1;
-        if (opt == 'E') {
+        } else if (opt == 'E') {
             options->e = 1;
         } else {
             fprintf(stderr, "use benstvTE");
