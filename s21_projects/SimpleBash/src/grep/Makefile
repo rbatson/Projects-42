@@ -1,7 +1,7 @@
-NAME = s21_cat
+NAME = s21_grep
 CC = gcc -std=c11 -D_GNU_SOURCE
 CFLAGS = -Wall -Wextra -Werror
-SRC = s21_cat.c
+SRC = s21_grep.c
 OBJ = $(SRC:c=o)
 
 all: $(NAME)
@@ -13,7 +13,7 @@ clean:
 	rm -f $(OBJ)
 
 cpplint:
-	python3.10 ../../materials/linters/cpplint.py s21_cat.*
+	python3.10 ../../materials/linters/cpplint.py s21_grep.*
 
 fclean:
 	rm -f $(OBJ)

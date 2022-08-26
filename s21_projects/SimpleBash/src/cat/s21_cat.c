@@ -1,29 +1,9 @@
-# include <stdio.h>
-# include <stdlib.h>
-# include <getopt.h>
-# include <unistd.h>
-
-typedef struct options_t {
-    int b;
-    int e;
-    int n;
-    int s;
-    int t;
-    int v;
-}opt;
-
-
-static struct option long_options[] = {
-    {"--number", 0, 0, 'n'},
-    {"--squeeze-blank", 0, 0, 's'},
-    {"--number-nonblank", 0, 0, 'b'},
-    {0, 0, 0, 0}
-};
+#include "./s21_cat.h"
 
 void parser(int argc, char **argv, opt *options) {
     int opt;
-    int option_index;
-    while ((opt = getopt_long(argc, argv, "+benstvTE", long_options, &option_index)) != -1) {
+    int option_index = 0;
+    while ((opt = getopt_long(argc, argv, "+bEnsTvet", long_options, &option_index)) != -1) {
         if (opt == 'e') {
             options->e = 1;
             options->v = 1;
@@ -87,6 +67,7 @@ void reader(char **argv, opt *options) {
     fclose(fp);
     } else {
         printf("No such file");
+        exit(1);
     }
 }
 
@@ -97,7 +78,6 @@ int main(int argc, char **argv) {
         printf("Неверное колличество аргументов");
         exit(1);
     }
-
     parser(argc, argv, &options);
     if (options.b)
         options.n = 0;
@@ -106,6 +86,5 @@ int main(int argc, char **argv) {
         options.e = 0;
     }
     reader(argv, &options);
-
     return (0);
 }
