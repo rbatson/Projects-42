@@ -1,46 +1,50 @@
-#all:
-#	gcc main.c common.c comparison.c -o comparison
-#	./comparison
-CC = gcc
-FLAG_C = -c
-FLAG_O = -o
+FLAGS = -Wall -Werror -Wextra -std=c11
+FUNC_C = big_helper.c helper.c s21_add.c s21_banking_round.c s21_div.c s21_floor.c s21_from_decimal_to_float.c \
+s21_from_decimal_to_int.c s21_from_float_to_decimal.c s21_from_int_to_decimal.c s21_is_equal.c s21_is_greater.c \
+s21_is_greater_or_equal.c s21_is_less.c s21_is_less_or_equal.c s21_is_not_equal.c s21_mod.c s21_mul.c s21_negate.c \
+s21_round.c s21_sub.c s21_truncate.c
+FUNC_O = big_helper.o helper.o s21_add.o s21_banking_round.o s21_div.o s21_floor.o s21_from_decimal_to_float.o \
+s21_from_decimal_to_int.o s21_from_float_to_decimal.o s21_from_int_to_decimal.o s21_is_equal.o s21_is_greater.o \
+s21_is_greater_or_equal.o s21_is_less.o s21_is_less_or_equal.o s21_is_not_equal.o s21_mod.o s21_mul.o s21_negate.o \
+s21_round.o s21_sub.o s21_truncate.o
 
-FLAG_COV = --coverage 
-FLAG_ER = -Wall -Werror -Wextra #-std=c11 -pedantic
-s21_decimal_C = s21_*.c 
-s21_decimal_O = s21_*.o
-SUITE_CASES_C = suite_*.c
-SUITE_CASES_O = suite_*.o
+all: s21_decimal.a
 
-all: clean s21_decimal.a test gcov_report
-## --- СОЗДАНИЕ БИБЛИОТЕКИ ФУНКЦИЙ ---
-
-s21_decimal.a:
-	$(CC) $(ASAN) $(FLAG_C) $(FLAG_ER) $(s21_decimal_C)
-	ar rc s21_decimal.a $(s21_decimal_O)
-	ranlib s21_decimal.a
-## --- СОЗДАНИЕ БИБЛИОТЕКИ ТЕСТОВ И ИСПОЛНЕНИЕ ---
-
-test: s21_decimal.a
-	$(CC) $(ASAN) $(FLAG_C) $(FLAG_ER) $(SUITE_CASES_C) -g main.c
-	ar rc suite_cases.a $(SUITE_CASES_O)
-	ranlib suite_cases.a
-	$(CC) $(ASAN) $(FLAG_ER) $(FLAG_COV) $(FLAG_O) tests s21_decimal.a suite_cases.a $(s21_decimal_C) main.o -lcheck
-	./tests
-## --- ФОРМИРОВАНИЕ ОТЧЕТА О ПОКРЫТИИ ---
-
-gcov_report: test
-	gcov s21_*.gcda	
-	gcovr -b 
-	gcovr
-	gcovr --html-details -o report.html
+rebuild: clean all
 
 clean:
-	-rm -rf *.o *.html *.gcda *.gcno *.css *.a *.gcov *.info *.out *.cfg *.txt tests
+	rm -rf *.o out *.info *.gcda *.gcno *.gcov *.gch *.out *.a test
 
-check:
-	cppcheck *.h *.c
-	cp ../materials/linters/CPPLINT.cfg CPPLINT.cfg
-	python3 ../materials/linters/cpplint.py --extension=c *.c *.h
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=RESULT_VALGRIND.txt ./tests
-	CK_FORK=no leaks --atExit -- ./tests
+s21_decimal.a: s21_decimal.o
+	ar rc s21_decimal.a $(FUNC_O)
+	ranlib s21_decimal.a
+
+s21_decimal.o:
+	gcc $(FLAGS) -c $(FUNC_C)
+
+test: clean
+	gcc $(FLAGS) -fprofile-arcs -ftest-coverage $(FUNC_C) -o test  s21_test.c -lcheck -lm -lpthread
+	./test
+
+gcov_report: test
+	gcov s21_test.c
+	lcov --capture --directory . --output-file coverage.info
+	genhtml coverage.info --output-directory out
+
+style:
+	clang-format -n *.c
+
+leaks:
+	leaks -atExit -- ./test | grep LEAK
+
+cppcheck:
+	cppcheck --enable=all --suppress=missingIncludeSystem ./
+
+valgrind:
+	valgrind --leak-check=full \
+             --show-leak-kinds=all \
+             --track-origins=yes \
+             --verbose \
+             --log-file=valgrind-out.txt \
+             ./test exampleParam1
+
